@@ -1,0 +1,52 @@
+{
+  "name": "resolutehr",
+  "version": "1.0.0",
+  "description": "ResoluteHR",
+"scripts": {
+  "dev": "TS_NODE_FILES=true pnpm nodemon -L",
+  "start": "node dist/index.js",
+  "build": "pnpm tsc && pnpm run copy-assets",
+  "copy-assets": "cp -r src/assets dist/"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/compression": "^1.7.5",
+    "@types/cookie-parser": "^1.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/lodash": "^4.14.202",
+    "@types/otp-generator": "^4.0.2",
+    "copyfiles": "^2.4.1",
+    "nodemon": "^3.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/html-pdf": "^3.0.3",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/nodemailer": "^6.4.14",
+    "@types/socket.io": "^3.0.2",
+    "axios": "^1.6.8",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "html-pdf": "^3.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "mailgen": "^2.0.28",
+    "marked": "^12.0.2",
+    "nodemailer": "^6.9.11",
+    "openai": "^4.33.0",
+    "otp-generator": "^4.0.1",
+    "puppeteer": "^22.8.0",
+    "socket.io": "^4.7.5"
+  }
+}
