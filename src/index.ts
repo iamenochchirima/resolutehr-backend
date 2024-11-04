@@ -6,6 +6,7 @@ import compression from "compression";
 import cors from "cors";
 import "dotenv/config";
 import router from "./router";
+import { PrismaClient } from "@prisma/client/extension";
 
 const app = express();
 app.use(
@@ -29,6 +30,10 @@ const PORT = process.env.PORT || 5000;
 const HOST = "0.0.0.0";
 
 const server = http.createServer(app);
+
+export const prismaClient : PrismaClient = new PrismaClient({
+  log: ["query"],
+});
 
 server.listen({ port: PORT, host: HOST }, () => {
   console.log(`Server is running on port ${PORT}`);

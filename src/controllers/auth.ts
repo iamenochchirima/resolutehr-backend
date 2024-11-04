@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import "dotenv/config";
 import { generateToken } from "../helpers";
 import otpGenerator from "otp-generator";
+import { prismaClient } from "index";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -29,7 +30,7 @@ export const register = async (req: Request, res: Response) => {
         .status(400)
         .json({ message: "Password must be at least 6 characters" });
     }
-    const user = await getUserByEmail(email);
+    const user = await prismaClient.user
     if (user) {
       return res.status(400).json({ message: "User already exists" });
     }

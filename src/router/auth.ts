@@ -6,8 +6,8 @@ import { registerMail } from "../controllers/mailer";
 
 export default (router: Router) => {
   router.post("/auth/register", register)
-  router.post("/auth/register-mail", registerMail)
   router.post("/auth/login", login)
+  router.post("/auth/register-mail", registerMail)
   router.post("/auth/logout", logout)
   router.post("/auth/authenticate", verifyUser, (req, res) => res.end())
   router.post("/auth/generate-otp", verifyUser, localVariables, generateOTP)
