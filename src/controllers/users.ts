@@ -1,5 +1,5 @@
 import expressAsyncHandler from "express-async-handler";
-import { UserModel, deleteUserById, getUserById, getUsers } from "../db/users";
+import { UserModel, deleteUserById, getUserById, getUsers } from "../schema/users";
 import { Request, Response } from "express";
 
 export const getAllUsers = async (req: Request, res: Response) => {

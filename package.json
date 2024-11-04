@@ -2,12 +2,12 @@
   "name": "resolutehr",
   "version": "1.0.0",
   "description": "ResoluteHR",
-"scripts": {
-  "dev": "TS_NODE_FILES=true pnpm nodemon -L",
-  "start": "node dist/index.js",
-  "build": "pnpm tsc && pnpm run copy-assets",
-  "copy-assets": "cp -r src/assets dist/"
-},
+  "scripts": {
+    "dev": "TS_NODE_FILES=true pnpm nodemon -L",
+    "start": "node dist/index.js",
+    "build": "pnpm tsc && pnpm run copy-assets",
+    "copy-assets": "cp -r src/assets dist/"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -25,6 +25,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@prisma/client": "^5.21.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/html-pdf": "^3.0.3",
     "@types/jsonwebtoken": "^9.0.5",
@@ -46,6 +47,7 @@
     "nodemailer": "^6.9.11",
     "openai": "^4.33.0",
     "otp-generator": "^4.0.1",
+    "prisma": "^5.21.1",
     "puppeteer": "^22.8.0",
     "socket.io": "^4.7.5"
   }

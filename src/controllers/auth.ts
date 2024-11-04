@@ -1,4 +1,4 @@
-import { createUser, getUserByEmail } from "../db/users";
+import { createUser, getUserByEmail } from "../schema/users";
 import { Request, Response } from "express";
 import "dotenv/config";
 import { generateToken } from "../helpers";

@@ -1,9 +1,9 @@
-import { getUserByEmail, getUserBySessionToken } from "../db/users";
+import { getUserByEmail, getUserBySessionToken } from "../schema/users";
 import { NextFunction, Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { get, merge } from "lodash";
-import { UserModel } from "../db/users";
+import { UserModel } from "../schema/users";
 
 function isJwtPayloadWithUserId(
   payload: string | JwtPayload
