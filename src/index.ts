@@ -6,7 +6,7 @@ import compression from "compression";
 import cors from "cors";
 import "dotenv/config";
 import router from "./router";
-import { PrismaClient } from "@prisma/client/extension";
+import { PrismaClient } from "@prisma/client";
 
 const app = express();
 app.use(
@@ -31,7 +31,7 @@ const HOST = "0.0.0.0";
 
 const server = http.createServer(app);
 
-export const prismaClient : PrismaClient = new PrismaClient({
+export const prismaClient  = new PrismaClient({
   log: ["query"],
 });
 

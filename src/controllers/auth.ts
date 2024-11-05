@@ -1,9 +1,9 @@
-import { createUser, getUserByEmail } from "../schema/users";
 import { Request, Response } from "express";
 import "dotenv/config";
 import { generateToken } from "../helpers";
 import otpGenerator from "otp-generator";
 import { prismaClient } from "index";
+import { hashSync } from "bcryptjs";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -30,22 +30,28 @@ export const register = async (req: Request, res: Response) => {
         .status(400)
         .json({ message: "Password must be at least 6 characters" });
     }
-    const user = await prismaClient.user
+    const user = await prismaClient.user.findFirst({
+      where: {
+        email
+      },
+    });
     if (user) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const newUser = await createUser({
-      firstname,
-      lastname,
-      email,
-      password,
+    const newUser = await prismaClient.user.create({
+      data: {
+        email,
+        password: hashSync(password, 10),
+        firstname,
+        lastname,
+      },
     });
     if (newUser) {
-      generateToken(res, newUser._id.toString());
+      generateToken(res, newUser.id.toString());
 
       res.status(201).json({
-        _id: newUser._id,
+        _id: newUser.id,
         firstname: newUser.firstname,
         lastname: newUser.lastname,
         email: newUser.email,
@@ -60,33 +66,33 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.sendStatus(400);
-    }
+  // try {
+  //   const { email, password } = req.body;
+  //   if (!email || !password) {
+  //     return res.sendStatus(400);
+  //   }
 
-    const user = await getUserByEmail(email).select("+password");
+  //   const user = await getUserByEmail(email).select("+password");
 
-    if (user && (await user.matchPassword(password))) {
-      generateToken(res, user._id.toString());
-      res
-        .status(200)
-        .json({
-          _id: user._id,
-          firstname: user.firstname,
-          lastname: user.lastname,
-          email: user.email,
-          isEmailVerified: user.isEmailVerified,
-        })
-        .end();
-    } else {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-  } catch (error) {
-    console.log("Error in login: ", error);
-    res.sendStatus(400);
-  }
+  //   if (user && (await user.matchPassword(password))) {
+  //     generateToken(res, user._id.toString());
+  //     res
+  //       .status(200)
+  //       .json({
+  //         _id: user._id,
+  //         firstname: user.firstname,
+  //         lastname: user.lastname,
+  //         email: user.email,
+  //         isEmailVerified: user.isEmailVerified,
+  //       })
+  //       .end();
+  //   } else {
+  //     return res.status(401).json({ message: "Invalid email or password" });
+  //   }
+  // } catch (error) {
+  //   console.log("Error in login: ", error);
+  //   res.sendStatus(400);
+  // }
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -125,23 +131,23 @@ export const createResetSession = async (req: Request, res: Response) => {
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  if (!req.app.locals.resetSession) {
-    return res.status(400).json({ message: "Session expired" });
-  }
+  // if (!req.app.locals.resetSession) {
+  //   return res.status(400).json({ message: "Session expired" });
+  // }
 
-  const { email, password, confirm } = req.body;
-  if (!email || !password || !confirm) {
-    return res.status(400).json({ message: "Invalid data" });
-  }
-  if (password !== confirm) {
-    return res.status(400).json({ message: "Passwords do not match" });
-  }
-  const user = await getUserByEmail(email);
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
-  }
-  req.app.locals.resetSession = false;
-  user.password = password;
-  await user.save();
-  res.status(200).json({ message: "Password reset" });
+  // const { email, password, confirm } = req.body;
+  // if (!email || !password || !confirm) {
+  //   return res.status(400).json({ message: "Invalid data" });
+  // }
+  // if (password !== confirm) {
+  //   return res.status(400).json({ message: "Passwords do not match" });
+  // }
+  // const user = await getUserByEmail(email);
+  // if (!user) {
+  //   return res.status(400).json({ message: "User not found" });
+  // }
+  // req.app.locals.resetSession = false;
+  // user.password = password;
+  // await user.save();
+  // res.status(200).json({ message: "Password reset" });
 };
