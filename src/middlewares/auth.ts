@@ -1,9 +1,9 @@
-import { getUserByEmail, getUserBySessionToken } from "../schema/users";
+// import { getUserByEmail, getUserBySessionToken } from "../schema/users";
 import { NextFunction, Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { get, merge } from "lodash";
-import { UserModel } from "../schema/users";
+// import { UserModel } from "../schema/users";
 
 function isJwtPayloadWithUserId(
   payload: string | JwtPayload
@@ -21,8 +21,8 @@ export const protect = expressAsyncHandler(
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       if (isJwtPayloadWithUserId(decoded)) {
-        req.user = await UserModel.findById(decoded.userId).select("-password");
-        next();
+        // req.user = await UserModel.findById(decoded.userId).select("-password");
+        // next();
       } else {
         console.log("decoded: ", decoded)
         res.status(401);
@@ -43,13 +43,13 @@ export const isAuthenticated = async (
       return res.sendStatus(403);
     }
 
-    const user = await getUserBySessionToken(sessionToken);
+    // const user = await getUserBySessionToken(sessionToken);
 
-    if (!user) {
-      return res.sendStatus(403);
-    }
+    // if (!user) {
+    //   return res.sendStatus(403);
+    // }
 
-    merge(req, { identity: user });
+    // merge(req, { identity: user });
 
     return next();
   } catch (error) {
@@ -67,17 +67,17 @@ export const isOwner = expressAsyncHandler(async (req: Request, res: Response, n
     throw new Error('User ID not found in request');
   }
 
-  const user = await UserModel.findById(resourceId);
+  // const user = await UserModel.findById(resourceId);
 
-  if (!user) {
-    res.status(404);
-    throw new Error('Resource not found');
-  }
+  // if (!user) {
+  //   res.status(404);
+  //   throw new Error('Resource not found');
+  // }
 
-  if (user._id.toString() !== userId.toString()) {
-    res.status(403);
-    throw new Error('User is not authorized to perform this action');
-  }
+  // if (user._id.toString() !== userId.toString()) {
+  //   res.status(403);
+  //   throw new Error('User is not authorized to perform this action');
+  // }
 
   next();
 });
@@ -89,11 +89,11 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     };
-    const user = await UserModel.findOne({ email })
+    // const user = await UserModel.findOne({ email })
 
-    if (!user) {
-      return res.status(404).json({ message: "User does not exist" });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: "User does not exist" });
+    // }
     return next();
   } catch (error) {
     return res.sendStatus(400);

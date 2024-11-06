@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import "dotenv/config";
 import { generateToken } from "../helpers";
 import otpGenerator from "otp-generator";
-import { prismaClient } from "index";
 import { hashSync } from "bcryptjs";
+import { prismaClient } from "../";
 
 export const register = async (req: Request, res: Response) => {
   try {
