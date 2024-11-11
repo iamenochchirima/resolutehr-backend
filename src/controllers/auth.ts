@@ -1,98 +1,105 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import "dotenv/config";
 import { generateToken } from "../helpers";
 import otpGenerator from "otp-generator";
-import { hashSync } from "bcryptjs";
+import { compareSync, hashSync } from "bcryptjs";
 import { prismaClient } from "../";
+import { BadRequestException } from "../exceptions/bad-request";
+import { ErrorCode } from "../exceptions/root";
 
 export const register = async (req: Request, res: Response) => {
-  try {
-    const { email, password, confirmPassword, firstname, lastname } = req.body;
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
-    }
-    if (!email || !password || !firstname || !lastname) {
-      return res.status(400).json({ message: "Invalid data" });
-    }
-    if (
-      firstname === "" ||
-      lastname === "" ||
-      email === "" ||
-      password === ""
-    ) {
-      return res.status(400).json({ message: "Invalid data: Empty fields" });
-    }
-    if (!email.includes("@") || !email.includes(".")) {
-      return res.status(400).json({ message: "Invalid email" });
-    }
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
-    }
-    const user = await prismaClient.user.findFirst({
-      where: {
-        email
-      },
-    });
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+  const { email, password, confirmPassword, firstname, lastname } = req.body;
 
-    const newUser = await prismaClient.user.create({
-      data: {
-        email,
-        password: hashSync(password, 10),
-        firstname,
-        lastname,
-      },
-    });
-    if (newUser) {
-      generateToken(res, newUser.id.toString());
-
-      res.status(201).json({
-        _id: newUser.id,
-        firstname: newUser.firstname,
-        lastname: newUser.lastname,
-        email: newUser.email,
-        isEmailVerified: newUser.isEmailVerified,
-      });
-    } else {
-      res.status(400).json({ message: "User not created, Invalid data" });
-    }
-  } catch (error) {
-    res.sendStatus(400);
+  if (!email || !password || !firstname || !lastname) {
+    throw new BadRequestException(
+      "Invalid data: Missing required fields",
+      ErrorCode.INVALID_DATA
+    );
   }
+
+  if (password !== confirmPassword) {
+    throw new BadRequestException(
+      "Passwords do not match",
+      ErrorCode.NOT_MATCHING_PASSWORDS
+    );
+  }
+
+  if (!email.includes("@") || !email.includes(".")) {
+    throw new BadRequestException(
+      "Invalid email format",
+      ErrorCode.INVALID_EMAIL
+    );
+  }
+
+  if (password.length < 6) {
+    throw new BadRequestException(
+      "Password must be at least 6 characters",
+      ErrorCode.INVALID_PASSWORD
+    );
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const existingUser = await prismaClient.user.findFirst({
+    where: { email: normalizedEmail },
+  });
+
+  if (existingUser) {
+    throw new BadRequestException(
+      "User already exists",
+      ErrorCode.USER_ALREADY_EXISTS
+    );
+  }
+
+  const newUser = await prismaClient.user.create({
+    data: {
+      email: normalizedEmail,
+      password: hashSync(password, 10),
+      firstname,
+      lastname,
+    },
+  });
+
+  generateToken(res, newUser.id.toString());
+  res.status(201).json({
+    firstname: newUser.firstname,
+    lastname: newUser.lastname,
+    email: newUser.email,
+    isEmailVerified: newUser.isEmailVerified,
+  });
 };
 
 export const login = async (req: Request, res: Response) => {
-  // try {
-  //   const { email, password } = req.body;
-  //   if (!email || !password) {
-  //     return res.sendStatus(400);
-  //   }
+  const { email, password } = req.body;
 
-  //   const user = await getUserByEmail(email).select("+password");
+  if (!email || !password) {
+    throw new BadRequestException("Invalid data", ErrorCode.INVALID_DATA);
+  }
 
-  //   if (user && (await user.matchPassword(password))) {
-  //     generateToken(res, user._id.toString());
-  //     res
-  //       .status(200)
-  //       .json({
-  //         _id: user._id,
-  //         firstname: user.firstname,
-  //         lastname: user.lastname,
-  //         email: user.email,
-  //         isEmailVerified: user.isEmailVerified,
-  //       })
-  //       .end();
-  //   } else {
-  //     return res.status(401).json({ message: "Invalid email or password" });
-  //   }
-  // } catch (error) {
-  //   console.log("Error in login: ", error);
-  //   res.sendStatus(400);
-  // }
+  const user = await prismaClient.user.findFirst({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new BadRequestException("User not found", ErrorCode.USER_NOT_FOUND);
+  }
+
+  if (!compareSync(password, user.password)) {
+    throw new BadRequestException(
+      "Incorrect password",
+      ErrorCode.INVALID_PASSWORD
+    );
+  }
+
+  generateToken(res, user.id.toString());
+  res
+    .status(200)
+    .json({
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      isEmailVerified: user.isEmailVerified,
+    })
+    .end();
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -134,7 +141,6 @@ export const resetPassword = async (req: Request, res: Response) => {
   // if (!req.app.locals.resetSession) {
   //   return res.status(400).json({ message: "Session expired" });
   // }
-
   // const { email, password, confirm } = req.body;
   // if (!email || !password || !confirm) {
   //   return res.status(400).json({ message: "Invalid data" });

@@ -2,7 +2,6 @@
 import { NextFunction, Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { get, merge } from "lodash";
 // import { UserModel } from "../schema/users";
 
 function isJwtPayloadWithUserId(
@@ -81,7 +80,6 @@ export const isOwner = expressAsyncHandler(async (req: Request, res: Response, n
 
   next();
 });
-
 
 export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
   try {

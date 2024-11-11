@@ -7,6 +7,7 @@ import cors from "cors";
 import "dotenv/config";
 import router from "./router";
 import { PrismaClient } from "@prisma/client";
+import { errorMiddleware } from "./middlewares/error";
 
 const app = express();
 app.use(
@@ -26,6 +27,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
 const PORT = process.env.PORT || 5000;
 const HOST = "0.0.0.0";
 
@@ -41,3 +43,5 @@ server.listen({ port: PORT, host: HOST }, () => {
 
 
 app.use("/api", router());
+
+app.use(errorMiddleware);

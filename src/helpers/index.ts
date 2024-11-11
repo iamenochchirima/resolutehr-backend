@@ -1,8 +1,9 @@
 import { Response } from "express";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../schema/secrets";
 
 export const generateToken = (res: Response, userId: string) => {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET as string, {
+  const token = jwt.sign({ userId }, JWT_SECRET as string, {
     expiresIn: "1d",
   });
 
