@@ -1,15 +1,14 @@
 import nodemailer from "nodemailer";
 import Mialgen from "mailgen";
 import "dotenv/config";
-import { Request, Response } from "express";
 
 const EMAIL = process.env.EMAIL;
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 
 let nodeConfig = {
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  host: "smtp.ethereal.email", // "smtp.gmail.com",
+  port: 587,//465,
+  secure: false, // true,
   auth: {
     user: EMAIL,
     pass: EMAIL_PASSWORD,
@@ -22,40 +21,50 @@ const transporter = nodemailer.createTransport(nodeConfig);
 const mailGenerator = new Mialgen({
   theme: "default",
   product: {
-    name: "Resolute hr",
+    name: "Resolute HR",
     link: "http://localhost:5000",
   },
 });
 
-export const registerMail = async (req: Request, res: Response) => {
-  const { userEmail, username, text, subject } = req.body;
-
-  var email = {
+export async function otpEmail(userEmail: string, username: string, otp: string) {
+  const email = {
     body: {
       name: username,
-      intro:
-        text ||
-        "Welcome to Resolute! We are very excited to have you on board.",
-      outro:
-        "Need help, or have questions? Just reply to this email, we would love to help.",
+      intro: `Welcome to Resolute HR!`,
+      table: {
+        data: [
+          { 'Your OTP Code': otp },
+        ],
+        columns: {
+          customWidth: {
+            'Your OTP Code': '30%',
+          },
+          customAlignment: {
+            'Your OTP Code': 'center',
+          },
+        },
+      },
+      outro: `
+        Please enter the above OTP code in the app to verify your email. 
+        This code is valid for the next 10 minutes. 
+        If you didn't request this, please ignore this email or contact support.`,
     },
   };
 
-  var emailBody = mailGenerator.generate(email);
+  const emailBody = mailGenerator.generate(email);
 
-  let message = {
+  const message = {
     from: EMAIL,
     to: userEmail,
-    subject: subject || "Welcome to Resolute",
+    subject: 'Your OTP Code for Resolute HR',
     html: emailBody,
   };
 
-  transporter
-    .sendMail(message)
-    .then((info) => {
-      res.status(200).json({ message: "Email sent" });
-    })
-    .catch((error) => {
-      res.status(400).json({ message: "Email not sent" });
-    });
-};
+  try {
+    await transporter.sendMail(message);
+    return { success: true, message: 'OTP email sent' };
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    return { success: false, message: 'OTP email not sent', error };
+  }
+}

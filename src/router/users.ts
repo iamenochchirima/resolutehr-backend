@@ -1,4 +1,4 @@
-import { protect, isOwner } from "../middlewares/auth";
+import { protect, } from "../middlewares/auth";
 import { deleteUser, getAllUsers, getUserProfile, updateUser } from "../controllers/users";
 import { Router } from "express";
 

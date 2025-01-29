@@ -1,8 +1,33 @@
 // import { getUserByEmail, getUserBySessionToken } from "../schema/users";
+import { ErrorCode } from "../exceptions/root";
+import { UnauthorizedException } from "../exceptions/unauthorized";
 import { NextFunction, Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import jwt, { JwtPayload } from "jsonwebtoken";
-// import { UserModel } from "../schema/users";
+import { JWT_SECRET } from "../schema/secrets";
+import { prismaClient } from "../index";
+import { BadRequestException } from "../exceptions/bad-request";
+
+export const authMidleware =  async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.cookies.RESOLUTEHR_JWT;
+
+  if (!token) {
+    next(new UnauthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as any
+
+    const user = await prismaClient.user.findFirst({where: {id: payload.userId}});
+    if (!user) {
+      next(new UnauthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));
+    }
+    req.user = user;
+    next();
+  } catch ( error) {
+    next(new UnauthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED, error));
+  }
+};
 
 function isJwtPayloadWithUserId(
   payload: string | JwtPayload
@@ -20,8 +45,12 @@ export const protect = expressAsyncHandler(
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       if (isJwtPayloadWithUserId(decoded)) {
-        // req.user = await UserModel.findById(decoded.userId).select("-password");
-        // next();
+        req.user = await prismaClient.user.findFirst({
+          where: {
+            id: decoded.userId,
+          },
+        });
+        next();
       } else {
         console.log("decoded: ", decoded)
         res.status(401);
@@ -31,72 +60,22 @@ export const protect = expressAsyncHandler(
   }
 );
 
-export const isAuthenticated = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const sessionToken = req.cookies["RESOLUTEHR_JWT"];
-    if (!sessionToken) {
-      return res.sendStatus(403);
-    }
-
-    // const user = await getUserBySessionToken(sessionToken);
-
-    // if (!user) {
-    //   return res.sendStatus(403);
-    // }
-
-    // merge(req, { identity: user });
-
-    return next();
-  } catch (error) {
-    console.log("error in isAuthenticated middleware: ", error);
-    return res.sendStatus(400);
-  }
-};
-
-
-export const isOwner = expressAsyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  const resourceId = req.params.id; 
-  const userId = req.user?._id; 
-  if (!userId) {
-    res.status(403);
-    throw new Error('User ID not found in request');
-  }
-
-  // const user = await UserModel.findById(resourceId);
-
-  // if (!user) {
-  //   res.status(404);
-  //   throw new Error('Resource not found');
-  // }
-
-  // if (user._id.toString() !== userId.toString()) {
-  //   res.status(403);
-  //   throw new Error('User is not authorized to perform this action');
-  // }
-
-  next();
-});
-
 export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email} = req.body;
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      throw new BadRequestException("Invalid data", ErrorCode.INVALID_DATA);
     };
-    // const user = await UserModel.findOne({ email })
-
-    // if (!user) {
-    //   return res.status(404).json({ message: "User does not exist" });
-    // }
+    const user = await prismaClient.user.findFirst({ where: { email } });
+    if (!user) {
+      throw new BadRequestException("User not found", ErrorCode.USER_NOT_FOUND);
+    }
     return next();
   } catch (error) {
     return res.sendStatus(400);
   }
 }
+
 
 export const localVariables = (req: Request, res: Response, next: NextFunction) => {
   req.app.locals = {

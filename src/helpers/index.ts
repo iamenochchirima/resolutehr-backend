@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../schema/secrets";
 
 export const generateToken = (res: Response, userId: string) => {
+  console.log("JWT_SECRET", JWT_SECRET);
   const token = jwt.sign({ userId }, JWT_SECRET as string, {
     expiresIn: "1d",
   });
