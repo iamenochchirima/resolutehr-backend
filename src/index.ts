@@ -13,6 +13,7 @@ const app = express();
 app.use(
   cors({
     origin: [
+      "https://resolutehr-client.vercel.app",
       "http://localhost:3000",
       "http://localhost:5173",
     ],
