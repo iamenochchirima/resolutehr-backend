@@ -202,8 +202,9 @@ export async function generateOTP(req: Request, res: Response) {
 
 
 export const verifyOTP = async (req: Request, res: Response) => {
-  const { code } = req.body;
-  if (code === req.app.locals.OTP) {
+  const { otp } = req.body;
+  console.log("OTP: ", otp, "req.app.locals.OTP: ", req.app.locals.OTP);
+  if (otp === req.app.locals.OTP) {
     req.app.locals.OTP = null;
     req.app.locals.resetSession = true;
     res.status(201).json({ message: "OTP verified" });
@@ -225,6 +226,7 @@ export const resetPassword: RequestHandler = async (
   req: Request,
   res: Response
 ) => {
+  console.log("resetPassword endpoint");
   if (!req.app.locals.resetSession) {
     res.status(400).json({ message: "Session expired" });
     return;

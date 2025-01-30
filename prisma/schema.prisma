@@ -14,8 +14,11 @@ datasource db {
 }
 
 enum Role {
-  ADMIN
   USER
+  ADMIN
+  SUPERADMIN
+  STAFF
+  MANAGER
 }
 
 model User {
@@ -24,6 +27,7 @@ model User {
   firstName              String
   lastName               String
   tradeName              String  
+  avatar                 String  @default("https://res.cloudinary.com/dx3z3wv7n/image/upload/v1633660004/avatars/default-avatar.png")
   DTIRegistrationNumber  String
   PAYEorSARSNumber       String
   EERefNumber            String
@@ -36,7 +40,7 @@ model User {
   physicalAddress        String
   CEOorAccountingOfficer String
   password               String
-  role                   Role     @default(USER)
+  authority              Role     @default(USER)
   isEmailVerified        Boolean  @default(false)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
